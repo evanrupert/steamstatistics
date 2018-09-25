@@ -6,8 +6,8 @@ import (
 )
 
 type okResult struct {
-	Ok   bool   `json:"ok"`
-	Data string `json:"data"`
+	Ok   bool  `json:"ok"`
+	Data []App `json:"data"`
 }
 
 type errResult struct {
@@ -15,12 +15,24 @@ type errResult struct {
 	Error string `json:"error"`
 }
 
-// HelloWorld handler for /
-func HelloWorld(w http.ResponseWriter, r *http.Request) {
-	sendResponse("Hello, World!", w)
+// APIRoot handler for api root path: /api
+func APIRoot(w http.ResponseWriter, r *http.Request) {
+	steamID, err := GetSteamIDFromVanityURL("Eguy45")
+
+	if err != nil {
+		sendError(err, w)
+	}
+
+	userApps, err := GetUserApps(steamID)
+
+	if err != nil {
+		sendError(err, w)
+	}
+
+	sendResponse(userApps, w)
 }
 
-func sendResponse(data string, w http.ResponseWriter) {
+func sendResponse(data []App, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(okResult{Ok: true, Data: data})

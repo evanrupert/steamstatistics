@@ -8,7 +8,9 @@ import (
 const port = "80"
 
 func main() {
-	http.HandleFunc("/", HelloWorld)
+	RunDatabaseMigrations()
+
+	http.HandleFunc("/api", APIRoot)
 
 	fmt.Printf("Web server started on port %s\n", port)
 
