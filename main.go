@@ -10,7 +10,8 @@ const port = "80"
 func main() {
 	RunDatabaseMigrations()
 
-	http.HandleFunc("/api", APIRoot)
+	http.HandleFunc("/api", APIRootController)
+	http.HandleFunc("/api/tags", GetTagsController)
 
 	fmt.Printf("Web server started on port %s\n", port)
 
