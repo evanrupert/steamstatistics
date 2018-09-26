@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -17,26 +18,23 @@ type errResponse struct {
 
 // APIRootController handler for api root path: /api
 func APIRootController(w http.ResponseWriter, r *http.Request) {
-	db, err := OpenConnection()
+	steamid, err := GetSteamIDFromVanityURL("Eguy45")
+
+	fmt.Println(steamid)
 
 	if err != nil {
 		sendError(err, w)
+		return
 	}
 
-	tags, err := GetAppTags(400, db)
+	allAppsTags, err := GetAllUserAppTags(steamid)
 
 	if err != nil {
 		sendError(err, w)
+		return
 	}
 
-	sendResponse(tags, w)
-}
-
-// GetTagsController handler for path: /api/tags
-func GetTagsController(w http.ResponseWriter, r *http.Request) {
-	tags := []string{"Tag1", "Tag2", "Tag3"}
-
-	sendResponse(tags, w)
+	sendResponse(allAppsTags, w)
 }
 
 func sendResponse(data interface{}, w http.ResponseWriter) {

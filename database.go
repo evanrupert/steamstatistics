@@ -23,23 +23,29 @@ func RunDatabaseMigrations() {
 }
 
 // InsertTagsIntoDatabase inserts the list of tags into the database
-func InsertTagsIntoDatabase(tags []Tag, db *gorm.DB) {
-	for _, tag := range tags {
+func InsertTagsIntoDatabase(appTags AppTags, db *gorm.DB) {
+	for _, tag := range appTags.Tags {
+		tag := Tag{Appid: appTags.AppID, Tag: tag}
 
-		insertTag(tag, db)
+		insertTag(&tag, db)
 	}
 }
 
-func insertTag(tag Tag, db *gorm.DB) {
+func insertTag(tag *Tag, db *gorm.DB) {
 	db.Create(tag)
 }
 
 // GetAppTagsFromDatabase returns the list of tags for an appID from the database
-func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) []Tag {
+func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) AppTags {
 	var tags []Tag
 	db.Where("appid = ?", appID).Find(&tags)
 
-	return tags
+	tagStrings := make([]string, len(tags))
+	for i, tag := range tags {
+		tagStrings[i] = tag.Tag
+	}
+
+	return AppTags{AppID: appID, Tags: tagStrings}
 }
 
 // OpenConnection opens a database connection
