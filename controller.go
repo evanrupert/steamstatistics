@@ -1,63 +1,52 @@
 package main
 
 import (
-  "encoding/json"
-  "net/http"
+	"encoding/json"
+	"net/http"
 )
 
-type appsResponse struct {
-  Ok   bool  `json:"ok"`
-  Data []App `json:"data"`
+type okResponse struct {
+	Ok   bool        `json:"ok"`
+	Data interface{} `json:"data"`
 }
 
-type tagsResponse struct {
-  Ok bool `json:"ok"`
-  Data []string `json:"data"`
-}
-
-type errResult struct {
-  Ok    bool   `json:"ok"`
-  Error string `json:"error"`
+type errResponse struct {
+	Ok    bool   `json:"ok"`
+	Error string `json:"error"`
 }
 
 // APIRootController handler for api root path: /api
 func APIRootController(w http.ResponseWriter, r *http.Request) {
-  steamID, err := GetSteamIDFromVanityURL("Eguy45")
+	db, err := OpenConnection()
 
-  if err != nil {
-    sendError(err, w)
-  }
+	if err != nil {
+		sendError(err, w)
+	}
 
-  userApps, err := GetUserApps(steamID)
+	tags, err := GetAppTags(400, db)
 
-  if err != nil {
-    sendError(err, w)
-  }
+	if err != nil {
+		sendError(err, w)
+	}
 
-  sendAllApps(userApps, w)
+	sendResponse(tags, w)
 }
 
 // GetTagsController handler for path: /api/tags
 func GetTagsController(w http.ResponseWriter, r *http.Request) {
-  tags := []string{"Tag1", "Tag2", "Tag3"}
+	tags := []string{"Tag1", "Tag2", "Tag3"}
 
-  sendTags(tags, w)
+	sendResponse(tags, w)
 }
 
-func sendAllApps(data []App, w http.ResponseWriter) {
-  w.Header().Set("Content-Type", "application/json")
+func sendResponse(data interface{}, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 
-  json.NewEncoder(w).Encode(appsResponse{Ok: true, Data: data})
-}
-
-func sendTags(data []string, w http.ResponseWriter) {
-  w.Header().Set("Content-Type", "application/json")
-
-  json.NewEncoder(w).Encode(tagsResponse{Ok: true, Data: data})
+	json.NewEncoder(w).Encode(okResponse{Ok: true, Data: data})
 }
 
 func sendError(err error, w http.ResponseWriter) {
-  w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-  json.NewEncoder(w).Encode(errResult{Ok: false, Error: err.Error()})
+	json.NewEncoder(w).Encode(errResponse{Ok: false, Error: err.Error()})
 }

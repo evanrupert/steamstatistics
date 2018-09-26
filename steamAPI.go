@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-const baseURL = "http://api.steampowered.com"
+const baseAPIURL = "http://api.steampowered.com"
 
 // CallMethod calls the given steam api method
 func CallMethod(steamInterface string,
@@ -19,10 +19,10 @@ func CallMethod(steamInterface string,
 	resp, err := GetURL(url)
 
 	if err != nil {
-    return nil, err
+		return nil, err
 	}
 
-  return resp, nil
+	return resp, nil
 }
 
 func buildRequestURL(steamInterface string,
@@ -30,7 +30,7 @@ func buildRequestURL(steamInterface string,
 	version int,
 	additionalParameters map[string]string) string {
 	url := fmt.Sprintf("%s/%s/%s/v00%d/",
-		baseURL,
+		baseAPIURL,
 		steamInterface,
 		method,
 		version)
