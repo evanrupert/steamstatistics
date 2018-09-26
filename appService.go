@@ -38,10 +38,10 @@ func GetAllUserAppTags(steamID string) ([]AppTags, error) {
 		return nil, err
 	}
 
-  apps, err := getUserApps(steamID)
+	apps, err := getUserApps(steamID)
 
 	if err != nil {
-    return nil, err
+		return nil, err
 	}
 
 	appTagsArray := make([]AppTags, len(apps))
@@ -58,7 +58,7 @@ func GetAllUserAppTags(steamID string) ([]AppTags, error) {
 }
 
 func getUserApps(steamID string) ([]App, error) {
-  fmt.Println(steamID)
+	fmt.Println(steamID)
 	parameters := map[string]string{"steamid": steamID, "format": "json"}
 	resp, err := CallMethod("IPlayerService", "GetOwnedGames", 1, parameters)
 
@@ -71,14 +71,14 @@ func getUserApps(steamID string) ([]App, error) {
 	return apps, nil
 }
 
-// GetAppTags returns the tags for a given appid
 func getAppTags(appID uint32, db *gorm.DB) (AppTags, error) {
 	var appTags AppTags
 
 	if appTags = GetAppTagsFromDatabase(appID, db); len(appTags.Tags) > 0 {
 		fmt.Printf("Getting tags from database for: %d\n", appID)
 	} else {
-		appTags, err := getAppTagsFromWebsite(appID)
+		var err error
+		appTags, err = getAppTagsFromWebsite(appID)
 
 		if err != nil {
 			return appTags, err

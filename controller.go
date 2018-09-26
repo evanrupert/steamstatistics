@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -18,23 +17,21 @@ type errResponse struct {
 
 // APIRootController handler for api root path: /api
 func APIRootController(w http.ResponseWriter, r *http.Request) {
-	steamid, err := GetSteamIDFromVanityURL("Eguy45")
-
-	fmt.Println(steamid)
+	steamID, err := GetSteamIDFromVanityURL("Eguy45")
 
 	if err != nil {
 		sendError(err, w)
 		return
 	}
 
-	allAppsTags, err := GetAllUserAppTags(steamid)
+	allAppTags, err := GetAllUserAppTags(steamID)
 
 	if err != nil {
 		sendError(err, w)
 		return
 	}
 
-	sendResponse(allAppsTags, w)
+	sendResponse(allAppTags, w)
 }
 
 func sendResponse(data interface{}, w http.ResponseWriter) {
