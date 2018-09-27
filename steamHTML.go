@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 )
 
 const baseStoreURL = "https://store.steampowered.com"
@@ -17,4 +19,22 @@ func GetGameStorePage(appID uint32) ([]byte, error) {
 	}
 
 	return resp, nil
+}
+
+func ExtractTagsFromHTML(html []byte) ([]string, error) {
+	regex, err := regexp.Compile(`class="app_tag"[^>]*>([^<]*)`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	matches := regex.FindAllStringSubmatch(string(html), -1)
+
+	tags := make([]string, len(matches))
+
+	for i, match := range matches {
+		tags[i] = strings.TrimSpace(match[1])
+	}
+
+	return tags, nil
 }

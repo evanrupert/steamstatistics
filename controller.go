@@ -34,6 +34,44 @@ func APIRootController(w http.ResponseWriter, r *http.Request) {
 	sendResponse(allAppTags, w)
 }
 
+// TagsController endpoint for returning the tags for an arbitrary application
+func TagsController(w http.ResponseWriter, r *http.Request) {
+	db, err := OpenConnection()
+
+	if err != nil {
+		sendError(err, w)
+		return
+	}
+
+	tags, err := GetAppTags(22330, db)
+
+	if err != nil {
+		sendError(err, w)
+		return
+	}
+
+	sendResponse(tags, w)
+}
+
+// TestingController testing endpoint for testing specific functions
+func TestingController(w http.ResponseWriter, r *http.Request) {
+	html, err := GetGameStorePage(22330)
+
+	if err != nil {
+		sendError(err, w)
+		return
+	}
+
+	tags, err := ExtractTagsFromHTML(html)
+
+	if err != nil {
+		sendError(err, w)
+		return
+	}
+
+	sendResponse(tags, w)
+}
+
 func sendResponse(data interface{}, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 

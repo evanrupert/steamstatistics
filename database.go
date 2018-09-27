@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -37,6 +38,8 @@ func insertTag(tag *Tag, db *gorm.DB) {
 
 // GetAppTagsFromDatabase returns the list of tags for an appID from the database
 func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) AppTags {
+	fmt.Printf("Attempting to find tags in database for: %d\n", appID)
+
 	var tags []Tag
 	db.Where("appid = ?", appID).Find(&tags)
 

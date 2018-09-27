@@ -11,6 +11,8 @@ func main() {
 	RunDatabaseMigrations()
 
 	http.HandleFunc("/api", APIRootController)
+	http.HandleFunc("/api/testing", TestingController)
+	http.HandleFunc("/api/tags", TagsController)
 
 	fmt.Printf("Web server started on port %s\n", port)
 

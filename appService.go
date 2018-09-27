@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
 
 	"github.com/jinzhu/gorm"
 )
@@ -46,7 +44,7 @@ func GetAllUserAppTags(steamID string) ([]AppTags, error) {
 
 	appTagsArray := make([]AppTags, len(apps))
 	for i, app := range apps {
-		appTags, err := getAppTags(app.AppID, db)
+		appTags, err := GetAppTags(app.AppID, db)
 		if err != nil {
 			return nil, err
 		}
@@ -58,7 +56,6 @@ func GetAllUserAppTags(steamID string) ([]AppTags, error) {
 }
 
 func getUserApps(steamID string) ([]App, error) {
-	fmt.Println(steamID)
 	parameters := map[string]string{"steamid": steamID, "format": "json"}
 	resp, err := CallMethod("IPlayerService", "GetOwnedGames", 1, parameters)
 
@@ -71,20 +68,16 @@ func getUserApps(steamID string) ([]App, error) {
 	return apps, nil
 }
 
-func getAppTags(appID uint32, db *gorm.DB) (AppTags, error) {
-	var appTags AppTags
+func GetAppTags(appID uint32, db *gorm.DB) (AppTags, error) {
+	appTags := GetAppTagsFromDatabase(appID, db)
 
-	if appTags = GetAppTagsFromDatabase(appID, db); len(appTags.Tags) > 0 {
-		fmt.Printf("Getting tags from database for: %d\n", appID)
-	} else {
+	if len(appTags.Tags) <= 0 {
 		var err error
 		appTags, err = getAppTagsFromWebsite(appID)
 
 		if err != nil {
 			return appTags, err
 		}
-
-		fmt.Printf("Getting tags from website for: %d\n", appID)
 
 		InsertTagsIntoDatabase(appTags, db)
 	}
@@ -93,13 +86,15 @@ func getAppTags(appID uint32, db *gorm.DB) (AppTags, error) {
 }
 
 func getAppTagsFromWebsite(appID uint32) (AppTags, error) {
+	fmt.Printf("Getting tags from website for: %d\n", appID)
+
 	var appTags AppTags
 	html, err := GetGameStorePage(appID)
 	if err != nil {
 		return appTags, err
 	}
 
-	stringTags, err := extractTagsFromHTML(html)
+	stringTags, err := ExtractTagsFromHTML(html)
 	if err != nil {
 		return appTags, err
 	}
@@ -107,24 +102,6 @@ func getAppTagsFromWebsite(appID uint32) (AppTags, error) {
 	appTags = AppTags{AppID: appID, Tags: stringTags}
 
 	return appTags, nil
-}
-
-func extractTagsFromHTML(html []byte) ([]string, error) {
-	regex, err := regexp.Compile(`class="app_tag"[^>]*>([^<]*)`)
-
-	if err != nil {
-		return nil, err
-	}
-
-	matches := regex.FindAllStringSubmatch(string(html), -1)
-
-	tags := make([]string, len(matches))
-
-	for i, match := range matches {
-		tags[i] = strings.TrimSpace(match[1])
-	}
-
-	return tags, nil
 }
 
 func appsFromResponse(resp []byte) []App {
