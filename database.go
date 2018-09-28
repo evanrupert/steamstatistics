@@ -2,10 +2,16 @@ package main
 
 import (
 	"os"
-	"fmt"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+)
+
+const (
+	// AppStatusNoSpecialStatus indicates a normal app
+	AppStatusNoSpecialStatus = iota
+	// AppStatusDoesNotExist indicates that an app does not have a steam store page
+	AppStatusDoesNotExist
 )
 
 // Tag represents a app with a tag
@@ -15,12 +21,20 @@ type Tag struct {
 	Tag   string
 }
 
+// AppStatus represents specialty statuses of some steam applications
+// 0 = Does not exist
+type AppStatus struct {
+	gorm.Model
+	Appid      uint32 `gorm:"not null;unique"`
+	StatusCode uint16
+}
+
 // RunDatabaseMigrations migrates all of the structs to the database
 func RunDatabaseMigrations() {
 	db, _ := OpenConnection()
 	defer db.Close()
 
-	db.AutoMigrate(&Tag{})
+	db.AutoMigrate(&Tag{}, &AppStatus{})
 }
 
 // InsertTagsIntoDatabase inserts the list of tags into the database
@@ -38,8 +52,6 @@ func insertTag(tag *Tag, db *gorm.DB) {
 
 // GetAppTagsFromDatabase returns the list of tags for an appID from the database
 func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) AppTags {
-	fmt.Printf("Attempting to find tags in database for: %d\n", appID)
-
 	var tags []Tag
 	db.Where("appid = ?", appID).Find(&tags)
 
@@ -49,6 +61,14 @@ func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) AppTags {
 	}
 
 	return AppTags{AppID: appID, Tags: tagStrings}
+}
+
+// GetAppStatusCode retrieves an applications status code
+func GetAppStatusCode(appID uint32, db *gorm.DB) uint16 {
+	var status AppStatus
+	db.Where("appid = ?", appID).First(&status)
+
+	return status.StatusCode
 }
 
 // OpenConnection opens a database connection

@@ -12,7 +12,7 @@ const baseStoreURL = "https://store.steampowered.com"
 func GetGameStorePage(appID uint32) ([]byte, error) {
 	url := fmt.Sprintf("%s/app/%d", baseStoreURL, appID)
 
-	resp, err := GetURL(url)
+	resp, err := GetURLWithCookie(url)
 
 	if err != nil {
 		return nil, err
