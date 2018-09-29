@@ -1,7 +1,8 @@
 import axios from 'axios'
 
-export function getTestData(callback) {
-  axios.get('/api/test')
+export function getTagPlaytimeData(username, callback) {
+  let url = '/api/data/' + username;
+  axios.get(url)
     .then((resp) => callback(resp.data))
     .catch((resp) => console.log(resp))
 }

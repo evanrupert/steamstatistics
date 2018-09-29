@@ -10,7 +10,7 @@ const port = "8080"
 func main() {
 	RunDatabaseMigrations()
 
-	http.HandleFunc("/api", APIRootController)
+	http.HandleFunc("/api/data/", DataController)
 	http.HandleFunc("/api/test", TestController)
 
 	fmt.Printf("Web server started on port %s\n", port)

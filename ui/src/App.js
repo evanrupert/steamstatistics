@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import './App.css';
-import {getTestData} from './DataService.js'
+import {getTagPlaytimeData} from './DataService.js'
 import {Jumbotron} from 'react-bootstrap'
 import {VanityUsernameInput} from './VanityUsernameInput.js'
+import {PlaytimeGraph} from './PlaytimeGraph.js'
 
 class App extends Component {
   constructor(props) {
@@ -12,8 +13,8 @@ class App extends Component {
     this.getDataForUsername = this.getDataForUsername.bind(this);
   }
 
-  getDataForUsername(_username) {
-    getTestData((resp) => this.setState({data: resp}));
+  getDataForUsername(username) {
+    getTagPlaytimeData(username, (data) => this.setState({data: data}));
   }
 
   getMainContent() {
@@ -23,7 +24,7 @@ class App extends Component {
       )
     } else {
       return (
-        <p>Placeholder for graph</p>
+        <PlaytimeGraph data={this.state.data} />
       )
     }
   }
