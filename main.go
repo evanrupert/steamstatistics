@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const port = "80"
+const port = "8080"
 
 func main() {
 	RunDatabaseMigrations()
