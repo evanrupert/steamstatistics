@@ -24,15 +24,15 @@ type AppPlaytime struct {
 
 // TagPlaytime represents a tag with an associated total playtime
 type TagPlaytime struct {
-	Tag string `json:"tag"`
-	Playtime uint32 `json:"playtime"`
+	Tag      string  `json:"tag"`
+	Playtime float32 `json:"playtime"`
 }
 
 // App represents a whole app object
 type App struct {
-	AppID uint32
+	AppID    uint32
 	Playtime uint32
-	Tags []string
+	Tags     []string
 }
 
 // AppTags represents an appid with associated tags
@@ -43,7 +43,7 @@ type AppTags struct {
 
 // GetTagPlaytimes returns the total playtime for each tag
 func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
-	apps, err := GetAllUserAppTags(steamID)
+	apps, err := getAllUserAppTags(steamID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,15 +62,19 @@ func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
 	i := 0
 	tagPlaytimes := make([]TagPlaytime, len(m))
 	for key, val := range m {
-		tagPlaytimes[i] = TagPlaytime{Tag: key, Playtime: val}
+		playtimeHours := minutesToHours(val)
+		tagPlaytimes[i] = TagPlaytime{Tag: key, Playtime: playtimeHours}
 		i++
 	}
 
 	return tagPlaytimes, nil
 }
 
-// GetAllUserAppTags returns all apptags for a user
-func GetAllUserAppTags(steamID string) ([]App, error) {
+func minutesToHours(minutes uint32) float32 {
+	return float32(minutes) / 60.0
+}
+
+func getAllUserAppTags(steamID string) ([]App, error) {
 	db, err := OpenConnection()
 
 	if err != nil {
