@@ -12,14 +12,27 @@ type userAppsResponse struct {
 }
 
 type apps struct {
-	GameCount int   `json:"game_count"`
-	Games     []App `json:"games"`
+	GameCount int           `json:"game_count"`
+	Games     []AppPlaytime `json:"games"`
 }
 
-// App represents an appid and a user's playtime
-type App struct {
+// AppPlaytime represents an appid and a user's playtime
+type AppPlaytime struct {
 	AppID    uint32 `json:"appid"`
 	Playtime uint32 `json:"playtime_forever"`
+}
+
+// TagPlaytime represents a tag with an associated total playtime
+type TagPlaytime struct {
+	Tag string `json:"tag"`
+	Playtime uint32 `json:"playtime"`
+}
+
+// App represents a whole app object
+type App struct {
+	AppID uint32
+	Playtime uint32
+	Tags []string
 }
 
 // AppTags represents an appid with associated tags
@@ -28,8 +41,36 @@ type AppTags struct {
 	Tags  []string `json:"tags"`
 }
 
+// GetTagPlaytimes returns the total playtime for each tag
+func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
+	apps, err := GetAllUserAppTags(steamID)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]uint32)
+	for _, app := range apps {
+		for _, tag := range app.Tags {
+			if _, ok := m[tag]; ok {
+				m[tag] += app.Playtime
+			} else {
+				m[tag] = app.Playtime
+			}
+		}
+	}
+
+	i := 0
+	tagPlaytimes := make([]TagPlaytime, len(m))
+	for key, val := range m {
+		tagPlaytimes[i] = TagPlaytime{Tag: key, Playtime: val}
+		i++
+	}
+
+	return tagPlaytimes, nil
+}
+
 // GetAllUserAppTags returns all apptags for a user
-func GetAllUserAppTags(steamID string) ([]AppTags, error) {
+func GetAllUserAppTags(steamID string) ([]App, error) {
 	db, err := OpenConnection()
 
 	if err != nil {
@@ -42,20 +83,20 @@ func GetAllUserAppTags(steamID string) ([]AppTags, error) {
 		return nil, err
 	}
 
-	appTagsArray := make([]AppTags, len(apps))
+	appTagsArray := make([]App, len(apps))
 	for i, app := range apps {
 		appTags, err := GetAppTags(app.AppID, db)
 		if err != nil {
 			return nil, err
 		}
 
-		appTagsArray[i] = appTags
+		appTagsArray[i] = App{AppID: appTags.AppID, Playtime: app.Playtime, Tags: appTags.Tags}
 	}
 
 	return appTagsArray, nil
 }
 
-func GetUserApps(steamID string) ([]App, error) {
+func GetUserApps(steamID string) ([]AppPlaytime, error) {
 	parameters := map[string]string{"steamid": steamID, "format": "json"}
 	resp, err := CallMethod("IPlayerService", "GetOwnedGames", 1, parameters)
 
@@ -71,9 +112,13 @@ func GetUserApps(steamID string) ([]App, error) {
 func GetAppTags(appID uint32, db *gorm.DB) (AppTags, error) {
 	appTags := GetAppTagsFromDatabase(appID, db)
 
-	if len(appTags.Tags) <= 0 {
+	if len(appTags.Tags) <= 0 && GetAppStatusCode(appID, db) != AppStatusDoesNotExist {
 		var err error
 		appTags, err = getAppTagsFromWebsite(appID)
+
+		if len(appTags.Tags) <= 0 {
+			InsertAppStatusCode(appTags.AppID, AppStatusDoesNotExist, db)
+		}
 
 		if err != nil {
 			return appTags, err
@@ -104,7 +149,7 @@ func getAppTagsFromWebsite(appID uint32) (AppTags, error) {
 	return appTags, nil
 }
 
-func appsFromResponse(resp []byte) []App {
+func appsFromResponse(resp []byte) []AppPlaytime {
 	userAppsResponse := userAppsResponse{}
 	json.Unmarshal(resp, &userAppsResponse)
 

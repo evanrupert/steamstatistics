@@ -71,6 +71,13 @@ func GetAppStatusCode(appID uint32, db *gorm.DB) uint16 {
 	return status.StatusCode
 }
 
+// InsertAppStatusCode inserts an appid with a given status into the app_statuses table
+func InsertAppStatusCode(appID uint32, statusCode uint16, db *gorm.DB) {
+	appStatus := AppStatus{Appid: appID, StatusCode: statusCode};
+
+	db.Create(&appStatus)
+}
+
 // OpenConnection opens a database connection
 func OpenConnection() (*gorm.DB, error) {
 	connString := os.Getenv("DATABASE_CONNECTION_STRING")
