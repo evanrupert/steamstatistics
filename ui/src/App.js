@@ -1,24 +1,42 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import {getTestData} from './DataService.js'
+import {Jumbotron} from 'react-bootstrap'
+import {VanityUsernameInput} from './VanityUsernameInput.js'
 
 class App extends Component {
-  printDataFromService() {
-    getTestData((data) => console.log(data))
+  constructor(props) {
+    super(props);
+    this.state = {data: null};
+
+    this.getDataForUsername = this.getDataForUsername.bind(this);
+  }
+
+  getDataForUsername(_username) {
+    getTestData((resp) => this.setState({data: resp}));
+  }
+
+  getMainContent() {
+    if (this.state.data === null) {
+      return (
+        <VanityUsernameInput onSubmit={this.getDataForUsername}/>
+      )
+    } else {
+      return (
+        <p>Placeholder for graph</p>
+      )
+    }
   }
 
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-        <button onClick={this.printDataFromService}>Click me for data</button>
+      <div className="App container">
+        <Jumbotron>
+          <h1 className="app-title">Steam Tag Playtime Calculator</h1>
+          <div className="main-content">
+            {this.getMainContent()}
+          </div>
+        </Jumbotron>
       </div>
     );
   }
