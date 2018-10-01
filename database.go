@@ -73,7 +73,7 @@ func GetAppStatusCode(appID uint32, db *gorm.DB) uint16 {
 
 // InsertAppStatusCode inserts an appid with a given status into the app_statuses table
 func InsertAppStatusCode(appID uint32, statusCode uint16, db *gorm.DB) {
-	appStatus := AppStatus{Appid: appID, StatusCode: statusCode};
+	appStatus := AppStatus{Appid: appID, StatusCode: statusCode}
 
 	db.Create(&appStatus)
 }
