@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/jinzhu/gorm"
 )
@@ -66,6 +67,10 @@ func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
 		tagPlaytimes[i] = TagPlaytime{Tag: key, Playtime: playtimeHours}
 		i++
 	}
+
+	sort.Slice(tagPlaytimes[:], func(i, j int) bool {
+		return tagPlaytimes[i].Playtime > tagPlaytimes[j].Playtime
+	})
 
 	return tagPlaytimes, nil
 }
