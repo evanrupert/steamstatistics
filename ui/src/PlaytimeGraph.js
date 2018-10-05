@@ -9,13 +9,8 @@ export class PlaytimeGraph extends Component {
       data: props.data,
     };
 
-    this.printData = this.printData.bind(this);
     this.createHighchartsConfig = this.createHighchartsConfig.bind(this);
     this.parseData = this.parseData.bind(this);
-  }
-
-  printData() {
-    console.log(this.state.data);
   }
 
   createHighchartsConfig(data) {
@@ -74,9 +69,7 @@ export class PlaytimeGraph extends Component {
   render() {
     return (
       <div>
-        <p>Placeholder for graph</p>
-        <ReactHighcharts config={this.createHighchartsConfig(this.parseData(this.state.data))}></ReactHighcharts>
-        <button onClick={this.printData}>Click to print data</button>
+        <ReactHighcharts config={this.createHighchartsConfig(this.parseData(this.state.data))} />
       </div>
     )
   }
