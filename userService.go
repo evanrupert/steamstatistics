@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 // SteamIDResponse represents the response of a call to ResolveVanityURL
@@ -24,14 +25,21 @@ func GetSteamIDFromVanityURL(vanityURL string) (string, error) {
 		return "", err
 	}
 
-	steamID := steamIDFromResponse(resp)
+	steamID, err := steamIDFromResponse(resp)
+	if err != nil {
+		return "", err
+	}
 
 	return steamID, nil
 }
 
-func steamIDFromResponse(resp []byte) string {
+func steamIDFromResponse(resp []byte) (string, error) {
 	steamIDResponse := SteamIDResponse{}
 	json.Unmarshal(resp, &steamIDResponse)
 
-	return steamIDResponse.Response.Steamid
+	if steamIDResponse.Response.Success == 42 {
+		return "", errors.New("vanity url not found")
+	} else {
+		return steamIDResponse.Response.Steamid, nil
+	}
 }
