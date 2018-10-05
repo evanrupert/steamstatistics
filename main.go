@@ -7,7 +7,6 @@ import (
 
 const port = "8080"
 
-// test change
 func main() {
 	RunDatabaseMigrations()
 
