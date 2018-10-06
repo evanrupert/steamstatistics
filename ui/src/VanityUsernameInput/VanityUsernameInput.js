@@ -2,6 +2,13 @@ import React, { Component } from 'react';
 import './VanityUsernameInput.css'
 import {Button, TextField, Tooltip} from '@material-ui/core'
 
+const styles = {
+  errorTooltip: {
+    fontSize: 14,
+    background: "#F31431"
+  }
+};
+
 export class VanityUsernameInput extends Component {
   constructor(props) {
     super(props);
@@ -35,17 +42,17 @@ export class VanityUsernameInput extends Component {
                  error={this.state.error !== null}
       />;
 
-    if (this.state.error !== null) {
-      return (
-        <Tooltip title={this.state.error}
+    if (this.state.error === null)
+      return textField;
 
-        >
-          {textField}
-        </Tooltip>
-      )
-    }
-
-    return textField;
+    return (
+      <Tooltip title={this.state.error}
+               placement="left"
+               classes={{tooltip: styles.errorTooltip}}
+      >
+        {textField}
+      </Tooltip>
+    )
   }
 
   render() {

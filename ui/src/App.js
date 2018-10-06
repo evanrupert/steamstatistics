@@ -3,6 +3,13 @@ import './App.css';
 import {getTagPlaytimeData} from './DataService.js'
 import {VanityUsernameInput} from './VanityUsernameInput/VanityUsernameInput.js'
 import {PlaytimeGraph} from './PlaytimeGraph.js'
+import {MuiThemeProvider, createMuiTheme} from '@material-ui/core/styles'
+
+const theme = createMuiTheme({
+  typography: {
+    fontSize: 20
+  }
+});
 
 class App extends Component {
   constructor(props) {
@@ -27,9 +34,7 @@ class App extends Component {
   getMainContent() {
     if (this.state.data === null) {
       return (
-        <VanityUsernameInput
-          onSubmit={this.getDataForUsername}
-        />
+        <VanityUsernameInput onSubmit={this.getDataForUsername} />
       )
     } else {
       return (
@@ -40,12 +45,14 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App container">
-        <h2 className="app-title">Steam Tag Playtime Calculator</h2>
-        <div className="main-content">
-          {this.getMainContent()}
+      <MuiThemeProvider theme={theme}>
+        <div className="App container">
+          <h1 className="app-title">Steam Tag Playtime Calculator</h1>
+          <div className="main-content">
+            {this.getMainContent()}
+          </div>
         </div>
-      </div>
+      </MuiThemeProvider>
     );
   }
 }
