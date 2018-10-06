@@ -15,18 +15,19 @@ class App extends Component {
   getDataForUsername(username) {
     getTagPlaytimeData(username, (data) => {
       if (!data.ok) {
-        this.setState({data: null, error: data.error})
+        this.setState({data: null, error: data.error});
       } else {
-        this.setState({data: data, error: null})
+        this.setState({data: data, error: null});
       }
     });
+
+    return this.state.error;
   }
 
   getMainContent() {
     if (this.state.data === null) {
       return (
         <VanityUsernameInput
-          error={this.state.error}
           onSubmit={this.getDataForUsername}
         />
       )
