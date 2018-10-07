@@ -11,13 +11,12 @@ import {Store} from '@ngrx/store'
 export class AppComponent implements OnInit {
   data: TagPlaytime[]
 
- constructor(private store: Store<AppState>) {
-   this.store.select('data').subscribe(data => {
-     this.data = data
-   })
- }
+ constructor(private store: Store<AppState>) {}
 
   ngOnInit() {
+    this.store.select('data').subscribe(data => {
+      this.data = data
+    })
   }
 
   printData(): void {
