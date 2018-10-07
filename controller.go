@@ -22,7 +22,7 @@ func DataController(w http.ResponseWriter, r *http.Request) {
 	vanityURL := strings.TrimPrefix(r.URL.Path, "/api/data/")
 
 	if len(vanityURL) <= 0 {
-		err := errors.New("No Vanity URL given")
+		err := errors.New("no vanity URL given")
 		sendError(err, w)
 		return
 	}
@@ -43,12 +43,13 @@ func DataController(w http.ResponseWriter, r *http.Request) {
 }
 
 // TestController is used as an endpoint for testing specific functions in a sandbox
-func TestController(w http.ResponseWriter, r *http.Request) {
+func TestController(w http.ResponseWriter, _ *http.Request) {
 	sendResponse("Hello, World!", w)
 }
 
 func sendResponse(data interface{}, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	json.NewEncoder(w).Encode(okResponse{Ok: true, Data: data})
 }

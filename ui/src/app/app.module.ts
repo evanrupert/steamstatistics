@@ -5,11 +5,13 @@ import { dataReducer } from './reducers/data.reducer'
 
 import { AppComponent } from './app.component'
 import { VanityUrlInputComponent } from './vanity-url-input/vanity-url-input.component'
+import { PlaytimeGraphComponent } from './playtime-graph/playtime-graph.component'
 
 @NgModule({
   declarations: [
     AppComponent,
-    VanityUrlInputComponent
+    VanityUrlInputComponent,
+    PlaytimeGraphComponent
   ],
   imports: [
     BrowserModule,

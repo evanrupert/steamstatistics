@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core'
 import {TagPlaytime} from './models/tag-playtime.model'
+import {AppState} from './app.state'
+import {Store} from '@ngrx/store'
 
 @Component({
   selector: 'app-root',
@@ -7,10 +9,18 @@ import {TagPlaytime} from './models/tag-playtime.model'
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'SteamStatistics'
   data: TagPlaytime[]
 
-  ngOnInit() {
+ constructor(private store: Store<AppState>) {
+   this.store.select('data').subscribe(data => {
+     this.data = data
+   })
+ }
 
+  ngOnInit() {
+  }
+
+  printData(): void {
+    console.log(this.data)
   }
 }
