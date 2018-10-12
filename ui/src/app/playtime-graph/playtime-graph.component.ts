@@ -7,7 +7,7 @@ import { Store } from '@ngrx/store'
 @Component({
   selector: 'app-playtime-graph',
   templateUrl: './playtime-graph.component.html',
-  styleUrls: ['./playtime-graph.component.css']
+  styleUrls: ['./playtime-graph.component.scss']
 })
 export class PlaytimeGraphComponent implements OnInit {
 

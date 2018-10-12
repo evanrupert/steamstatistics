@@ -9,7 +9,7 @@ import {SetData} from '../actions/data.actions'
 @Component({
   selector: 'app-vanity-url-input',
   templateUrl: './vanity-url-input.component.html',
-  styleUrls: ['./vanity-url-input.component.css']
+  styleUrls: ['./vanity-url-input.component.scss']
 })
 export class VanityUrlInputComponent implements OnInit {
 
