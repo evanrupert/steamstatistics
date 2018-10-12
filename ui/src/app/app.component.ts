@@ -18,8 +18,4 @@ export class AppComponent implements OnInit {
       this.data = data
     })
   }
-
-  printData(): void {
-    console.log(this.data)
-  }
 }
