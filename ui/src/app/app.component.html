@@ -1,10 +1,10 @@
 <div class="main-container">
   <h1>Steam Statistics</h1>
-  <p>Enter your steam public vanity url then give it a few minutes to calculate your playtime vs tags</p>
-  <div *ngIf="!data">
+  <div *ngIf="!displayGraph">
     <app-vanity-url-input></app-vanity-url-input>
   </div>
-  <div *ngIf="data">
+  <div *ngIf="displayGraph">
     <app-playtime-graph></app-playtime-graph>
   </div>
 </div>
+<button (click)="resetData()">Try another user</button>

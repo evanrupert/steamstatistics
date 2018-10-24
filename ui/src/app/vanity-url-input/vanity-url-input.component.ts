@@ -13,6 +13,8 @@ import {SetData} from '../actions/data.actions'
 })
 export class VanityUrlInputComponent implements OnInit {
 
+  inputError: string = null
+
   constructor(private store: Store<AppState>) { }
 
   ngOnInit() {
@@ -22,9 +24,16 @@ export class VanityUrlInputComponent implements OnInit {
     axios.request<ServerResponse<TagPlaytime[]>>({
       url: 'http://localhost:8080/api/data/' + vanityUrl
     }).then((resp) => {
-      console.log(resp.data.data)
-      this.store.dispatch(new SetData(resp.data.data))
+      this.handleData(resp.data)
     })
+  }
+
+  handleData(serverResponse: ServerResponse<TagPlaytime[]>): void {
+    if (!serverResponse.ok) {
+      this.inputError = serverResponse.error
+    } else {
+      this.store.dispatch(new SetData(serverResponse.data))
+    }
   }
 
 }

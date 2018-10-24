@@ -1,4 +1,6 @@
 export interface ServerResponse<T> {
   ok: boolean
-  data: T
+  data?: T
+  error?: string
+
 }

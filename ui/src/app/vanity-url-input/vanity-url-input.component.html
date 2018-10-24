@@ -1,5 +1,6 @@
 <div>
+  <p>Enter your steam public vanity url then give it a few minutes to calculate your playtime vs tags</p>
   <input type="text" placeholder="Vanity URL" #vanityUrl>
-
   <button (click)="getData(vanityUrl.value)">Get Data</button>
+  <p class="error-message"*ngIf="inputError">{{inputError}}</p>
 </div>

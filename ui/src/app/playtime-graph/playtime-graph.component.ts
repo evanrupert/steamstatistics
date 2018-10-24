@@ -3,6 +3,7 @@ import * as CanvasJS from './../../assets/canvasjs.min.js'
 import { TagPlaytime } from '../models/tag-playtime.model'
 import { AppState } from '../app.state'
 import { Store } from '@ngrx/store'
+import { SetData } from '../actions/data.actions.js';
 
 @Component({
   selector: 'app-playtime-graph',
