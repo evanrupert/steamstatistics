@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 
 	"github.com/jinzhu/gorm"
@@ -26,7 +27,7 @@ type AppPlaytime struct {
 // TagPlaytime represents a tag with an associated total playtime
 type TagPlaytime struct {
 	Tag      string  `json:"tag"`
-	Playtime float32 `json:"playtime"`
+	Playtime float64 `json:"playtime"`
 }
 
 // App represents a whole app object
@@ -49,24 +50,7 @@ func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
 		return nil, err
 	}
 
-	m := make(map[string]uint32)
-	for _, app := range apps {
-		for _, tag := range app.Tags {
-			if _, ok := m[tag]; ok {
-				m[tag] += app.Playtime
-			} else {
-				m[tag] = app.Playtime
-			}
-		}
-	}
-
-	i := 0
-	tagPlaytimes := make([]TagPlaytime, len(m))
-	for key, val := range m {
-		playtimeHours := minutesToHours(val)
-		tagPlaytimes[i] = TagPlaytime{Tag: key, Playtime: playtimeHours}
-		i++
-	}
+	tagPlaytimes := convertTagPlaytimeMapToArray(calculateHoursPerTag(apps))
 
 	sort.Slice(tagPlaytimes[:], func(i, j int) bool {
 		return tagPlaytimes[i].Playtime > tagPlaytimes[j].Playtime
@@ -75,8 +59,47 @@ func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
 	return tagPlaytimes, nil
 }
 
-func minutesToHours(minutes uint32) float32 {
-	return float32(minutes) / 60.0
+func calculateHoursPerTag(apps []App) map[string]uint32 {
+	tagPlaytimeMap := make(map[string]uint32)
+
+	for _, app := range apps {
+		for _, tag := range app.Tags {
+			if tagExistsInMap(tagPlaytimeMap, tag) {
+				tagPlaytimeMap[tag] += app.Playtime
+			} else {
+				tagPlaytimeMap[tag] = app.Playtime
+			}
+		}
+	}
+
+	return tagPlaytimeMap
+}
+
+func convertTagPlaytimeMapToArray(tagPlaytimeMap map[string]uint32) []TagPlaytime {
+	index := 0
+	tagPlaytimes := make([]TagPlaytime, len(tagPlaytimeMap))
+	for tag, playtime := range tagPlaytimeMap {
+		playtimeHours := minutesToHours(playtime)
+		tagPlaytimes[index] = TagPlaytime{Tag: tag, Playtime: playtimeHours}
+		index++
+	}
+
+	return tagPlaytimes
+}
+
+func tagExistsInMap(tagPlaytimeMap map[string]uint32, tag string) bool {
+	_, exists := tagPlaytimeMap[tag]
+	return exists
+}
+
+func minutesToHours(minutes uint32) float64 {
+	hours := float64(minutes) / 60.0
+	return roundToHundreds(hours)
+}
+
+func roundToHundreds(number float64) float64 {
+	unit := 100.0
+	return math.Round(number * unit) / unit
 }
 
 func getAllUserAppTags(steamID string) ([]App, error) {
