@@ -11,11 +11,8 @@ import { Store } from '@ngrx/store'
 export class PlaytimeGraphComponent implements OnInit {
 
   data: TagPlaytime[]
-  barChartLabels: string[] = ['2006', '2007', '2008', '2009', '2010', '2011', '2012']
-  barChartData: any = [{
-    data: [1, 2, 3, 4, 5, 6, 7],
-    label: 'Number'
-  }]
+  barChartLabels: string[] = []
+  barChartData: any = []
 
   constructor(private store: Store<AppState>) { }
 
@@ -23,14 +20,18 @@ export class PlaytimeGraphComponent implements OnInit {
     this.store.select('data').subscribe(data => {
       this.data = data
       this.setBarChartData()
+      this.setBarChartLabels()
     })
   }
 
   setBarChartData(): void {
-
+    this.barChartData = [{
+      data: this.data.slice(0, 20).map(tp => tp.playtime),
+      label: 'Playtime Hours'
+    }]
   }
 
-  setBarChartLables(): void {
-    this.barChartLabels = this.data.slice(0, 20).map((tagPlaytime => tagPlaytime.tag))
+  setBarChartLabels(): void {
+    this.barChartLabels = this.data.slice(0, 20).map(tp => tp.tag)
   }
 }
