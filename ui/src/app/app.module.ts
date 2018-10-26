@@ -6,6 +6,7 @@ import { dataReducer } from './reducers/data.reducer'
 import { AppComponent } from './app.component'
 import { VanityUrlInputComponent } from './vanity-url-input/vanity-url-input.component'
 import { PlaytimeGraphComponent } from './playtime-graph/playtime-graph.component'
+import {ChartsModule} from 'ng2-charts'
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { PlaytimeGraphComponent } from './playtime-graph/playtime-graph.componen
   ],
   imports: [
     BrowserModule,
-    StoreModule.forRoot({ data: dataReducer })
+    StoreModule.forRoot({ data: dataReducer }),
+    ChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
