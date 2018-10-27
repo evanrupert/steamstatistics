@@ -26,12 +26,12 @@ export class PlaytimeGraphComponent implements OnInit {
 
   setBarChartData(): void {
     this.barChartData = [{
-      data: this.data.slice(0, 20).map(tp => tp.playtime),
+      data: this.data.slice(0, 15).map(tp => tp.playtime),
       label: 'Playtime Hours'
     }]
   }
 
   setBarChartLabels(): void {
-    this.barChartLabels = this.data.slice(0, 20).map(tp => tp.tag)
+    this.barChartLabels = this.data.slice(0, 15).map(tp => tp.tag)
   }
 }

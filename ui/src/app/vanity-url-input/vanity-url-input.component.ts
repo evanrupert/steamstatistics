@@ -35,5 +35,4 @@ export class VanityUrlInputComponent implements OnInit {
       this.store.dispatch(new SetData(serverResponse.data))
     }
   }
-
 }
