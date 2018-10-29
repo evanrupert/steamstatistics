@@ -8,16 +8,14 @@ import (
 )
 
 const (
-	// AppStatusNoSpecialStatus indicates a normal app
-	AppStatusNoSpecialStatus = iota
 	// AppStatusDoesNotExist indicates that an app does not have a steam store page
-	AppStatusDoesNotExist
+	AppStatusDoesNotExist = iota
 )
 
 // Tag represents a app with a tag
 type Tag struct {
 	gorm.Model
-	Appid uint32
+	AppID uint32
 	Tag   string
 }
 
@@ -37,14 +35,26 @@ func RunDatabaseMigrations() {
 	db.AutoMigrate(&Tag{}, &AppStatus{})
 }
 
-// InsertTagsIntoDatabase inserts the list of tags into the database
-func InsertTagsIntoDatabase(appTags AppTags, db *gorm.DB) {
+// DatabaseWriter is a process that will insert AppTags into the database
+func DatabaseWriter(c chan AppTags, quit chan bool, db *gorm.DB) {
+	for true {
+		select {
+		case appTags := <- c:
+			insertTagsIntoDatabase(appTags, db)
+		case <- quit:
+			break
+		}
+	}
+}
+
+func insertTagsIntoDatabase(appTags AppTags, db *gorm.DB) {
 	for _, tag := range appTags.Tags {
-		tag := Tag{Appid: appTags.AppID, Tag: tag}
+		tag := Tag{AppID: appTags.AppID, Tag: tag}
 
 		insertTag(&tag, db)
 	}
 }
+
 
 func insertTag(tag *Tag, db *gorm.DB) {
 	db.Create(tag)

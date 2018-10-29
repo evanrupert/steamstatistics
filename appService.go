@@ -2,11 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"math"
 	"sort"
-
-	"github.com/jinzhu/gorm"
 )
 
 type userAppsResponse struct {
@@ -45,7 +42,7 @@ type AppTags struct {
 
 // GetTagPlaytimes returns the total playtime for each tag
 func GetTagPlaytimes(steamID string) ([]TagPlaytime, error) {
-	apps, err := getAllUserAppTags(steamID)
+	apps, err := GetAllUserAppTags(steamID)
 	if err != nil {
 		return nil, err
 	}
@@ -102,32 +99,6 @@ func roundToHundreds(number float64) float64 {
 	return math.Round(number * unit) / unit
 }
 
-func getAllUserAppTags(steamID string) ([]App, error) {
-	db, err := OpenConnection()
-
-	if err != nil {
-		return nil, err
-	}
-
-	apps, err := GetUserApps(steamID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	appTagsArray := make([]App, len(apps))
-	for i, app := range apps {
-		appTags, err := GetAppTags(app.AppID, db)
-		if err != nil {
-			return nil, err
-		}
-
-		appTagsArray[i] = App{AppID: appTags.AppID, Playtime: app.Playtime, Tags: appTags.Tags}
-	}
-
-	return appTagsArray, nil
-}
-
 func GetUserApps(steamID string) ([]AppPlaytime, error) {
 	parameters := map[string]string{"steamid": steamID, "format": "json"}
 	resp, err := CallMethod("IPlayerService", "GetOwnedGames", 1, parameters)
@@ -139,46 +110,6 @@ func GetUserApps(steamID string) ([]AppPlaytime, error) {
 	apps := appsFromResponse(resp)
 
 	return apps, nil
-}
-
-func GetAppTags(appID uint32, db *gorm.DB) (AppTags, error) {
-	appTags := GetAppTagsFromDatabase(appID, db)
-
-	if len(appTags.Tags) <= 0 && GetAppStatusCode(appID, db) != AppStatusDoesNotExist {
-		var err error
-		appTags, err = getAppTagsFromWebsite(appID)
-
-		if len(appTags.Tags) <= 0 {
-			InsertAppStatusCode(appTags.AppID, AppStatusDoesNotExist, db)
-		}
-
-		if err != nil {
-			return appTags, err
-		}
-
-		InsertTagsIntoDatabase(appTags, db)
-	}
-
-	return appTags, nil
-}
-
-func getAppTagsFromWebsite(appID uint32) (AppTags, error) {
-	fmt.Printf("Fetching tags from website for: %d\n", appID)
-
-	var appTags AppTags
-	html, err := GetGameStorePage(appID)
-	if err != nil {
-		return appTags, err
-	}
-
-	stringTags, err := ExtractTagsFromHTML(html)
-	if err != nil {
-		return appTags, err
-	}
-
-	appTags = AppTags{AppID: appID, Tags: stringTags}
-
-	return appTags, nil
 }
 
 func appsFromResponse(resp []byte) []AppPlaytime {
