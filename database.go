@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jinzhu/gorm"
@@ -8,8 +9,10 @@ import (
 )
 
 const (
+	// AppStatusNormalStatus indicates that an application is being stored normally
+	AppStatusNormalStatus = iota
 	// AppStatusDoesNotExist indicates that an app does not have a steam store page
-	AppStatusDoesNotExist = iota
+	AppStatusDoesNotExist
 )
 
 // Tag represents a app with a tag
@@ -20,10 +23,9 @@ type Tag struct {
 }
 
 // AppStatus represents specialty statuses of some steam applications
-// 0 = Does not exist
 type AppStatus struct {
 	gorm.Model
-	Appid      uint32 `gorm:"not null;unique"`
+	AppID      uint32 `gorm:"not null;unique"`
 	StatusCode uint16
 }
 
@@ -35,35 +37,29 @@ func RunDatabaseMigrations() {
 	db.AutoMigrate(&Tag{}, &AppStatus{})
 }
 
-// DatabaseWriter is a process that will insert AppTags into the database
-func DatabaseWriter(c chan AppTags, quit chan bool, db *gorm.DB) {
+// StatusDatabaseWriter is a process that will write app statuse updates to the database
+func StatusDatabaseWriter(statusChan chan AppStatus, stopChan chan bool, db *gorm.DB) {
 	for true {
 		select {
-		case appTags := <- c:
-			insertTagsIntoDatabase(appTags, db)
-		case <- quit:
+		case status := <- statusChan:
+			db.Create(&status)
+		case <- stopChan:
+			fmt.Println("StatusDatabaseWriter process ending")
 			break
 		}
 	}
 }
 
-func insertTagsIntoDatabase(appTags AppTags, db *gorm.DB) {
-	for _, tag := range appTags.Tags {
-		tag := Tag{AppID: appTags.AppID, Tag: tag}
-
-		insertTag(&tag, db)
+func InsertTagsIntoDatabase(app App, db *gorm.DB) {
+	for _, tag := range app.Tags {
+		db.Create(&Tag{AppID: app.AppID, Tag: tag})
 	}
-}
-
-
-func insertTag(tag *Tag, db *gorm.DB) {
-	db.Create(tag)
 }
 
 // GetAppTagsFromDatabase returns the list of tags for an appID from the database
 func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) AppTags {
 	var tags []Tag
-	db.Where("appid = ?", appID).Find(&tags)
+	db.Where("app_id = ?", appID).Find(&tags)
 
 	tagStrings := make([]string, len(tags))
 	for i, tag := range tags {
@@ -76,16 +72,9 @@ func GetAppTagsFromDatabase(appID uint32, db *gorm.DB) AppTags {
 // GetAppStatusCode retrieves an applications status code
 func GetAppStatusCode(appID uint32, db *gorm.DB) uint16 {
 	var status AppStatus
-	db.Where("appid = ?", appID).First(&status)
+	db.Where("app_id = ?", appID).First(&status)
 
 	return status.StatusCode
-}
-
-// InsertAppStatusCode inserts an appid with a given status into the app_statuses table
-func InsertAppStatusCode(appID uint32, statusCode uint16, db *gorm.DB) {
-	appStatus := AppStatus{Appid: appID, StatusCode: statusCode}
-
-	db.Create(&appStatus)
 }
 
 // OpenConnection opens a database connection

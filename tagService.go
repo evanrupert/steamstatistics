@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 func GetAllUserAppTags(steamID string) ([]App, error) {
@@ -18,55 +19,60 @@ func GetAllUserAppTags(steamID string) ([]App, error) {
 
 	appTagsArray := make([]App, len(apps))
 
-	appTagsChan := make(chan AppTags)
-	stopDatabaseChan := make(chan bool)
+	appChan := make(chan App)
+	statusChan := make(chan AppStatus)
+	stopChan := make(chan bool)
 
-	go DatabaseWriter(appTagsChan, stopDatabaseChan, db)
+	go StatusDatabaseWriter(statusChan, stopChan, db)
 
 	i := 0
 
 	for _, app := range apps {
-		err := getAppTags(app.AppID, appTagsChan, db)
-		if err != nil {
-			return nil, err
+		appTags := GetAppTagsFromDatabase(app.AppID, db)
+		if needsToGatherData(appTags, db) {
+			go getAppTags(app, appChan, statusChan)
+			i++
+		} else {
+			appTagsArray = append(appTagsArray, createApp(appTags, app.Playtime))
 		}
-		i++
-
-		//appTagsChan <- appTags
-		//
-		//appTagsArray[i] = App{AppID: appTags.AppID, Playtime: app.Playtime, Tags: appTags.Tags}
 	}
 
-	// TODO: Finish implementing concurrency for the getAppTags process
-	// NOTE: this will have to be redesign because the current algo depends on
-	// having access to the app on line 28 but of course there is not order if it is performed concurrently
 	for i > 0 {
-		appTags := <- appTagsChan
-		appTagsArray = append(appTagsArray, /* Insert App here */)
+		app := <-appChan
+		InsertTagsIntoDatabase(app, db)
+		appTagsArray = append(appTagsArray, app)
+		i--
 	}
+
+	stopChan <- true
 
 	return appTagsArray, nil
 }
 
-func getAppTags(appID uint32, c chan AppTags, db *gorm.DB) error {
-	appTags := GetAppTagsFromDatabase(appID, db)
+func needsToGatherData(appTags AppTags, db *gorm.DB) bool {
+	return len(appTags.Tags) <= 0 && GetAppStatusCode(appTags.AppID, db) != AppStatusDoesNotExist
+}
 
-	if len(appTags.Tags) <= 0 && GetAppStatusCode(appID, db) != AppStatusDoesNotExist {
-		var err error
-		appTags, err = getAppTagsFromWebsite(appID)
+func createApp(appTags AppTags, playtime uint32) App {
+	return App{AppID: appTags.AppID, Playtime: playtime, Tags: appTags.Tags}
+}
 
-		if len(appTags.Tags) <= 0 {
-			InsertAppStatusCode(appTags.AppID, AppStatusDoesNotExist, db)
-		}
-
-		if err != nil {
-			return err
-		}
+func getAppTags(appPlaytime AppPlaytime,
+			    returnChan chan App,
+			    statusCodeChan chan AppStatus) {
+	appTags, err := getAppTagsFromWebsite(appPlaytime.AppID)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("retrying...")
+		time.Sleep(100 * time.Millisecond)
+		getAppTags(appPlaytime, returnChan, statusCodeChan)
 	}
 
-	c <- appTags
+	if len(appTags.Tags) <= 0 {
+		statusCodeChan <- AppStatus{AppID: appTags.AppID, StatusCode: AppStatusDoesNotExist}
+	}
 
-	return nil
+	returnChan <- App{AppID: appPlaytime.AppID, Playtime: appPlaytime.Playtime, Tags: appTags.Tags}
 }
 
 func getAppTagsFromWebsite(appID uint32) (AppTags, error) {
