@@ -6,7 +6,9 @@ import { dataReducer } from './reducers/data.reducer'
 import { AppComponent } from './app.component'
 import { VanityUrlInputComponent } from './vanity-url-input/vanity-url-input.component'
 import { PlaytimeGraphComponent } from './playtime-graph/playtime-graph.component'
-import {ChartsModule} from 'ng2-charts'
+import { ChartsModule } from 'ng2-charts'
+import { MatProgressBarModule } from '@angular/material'
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 
 @NgModule({
   declarations: [
@@ -16,8 +18,10 @@ import {ChartsModule} from 'ng2-charts'
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     StoreModule.forRoot({ data: dataReducer }),
-    ChartsModule
+    ChartsModule,
+    MatProgressBarModule
   ],
   providers: [],
   bootstrap: [AppComponent]
